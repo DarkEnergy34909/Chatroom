@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Chatroom</title>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+
+        <script>
+            // Validates the username input
+            function validateUsername(event) {
+                // Get the username input
+                let username = document.getElementById("username-input").value;
+
+                // If the username is empty, prevent the form from submitting and display an error message
+                if (username == "") {
+                    event.preventDefault();
+
+                    // Display an error message
+                    displayErrorMessage("Please enter a username.");
+                }
+
+                // If the username contains spaces, display an error message
+                else if (username.includes(" ")) {
+                    event.preventDefault();
+
+                    // Display an error message
+                    displayErrorMessage("Username cannot contain spaces.")
+                }
+
+                // If the username is too long, display an error message
+                else if (username.length > 20) {
+                    event.preventDefault();
+
+                    // Display an error message
+                    displayErrorMessage("Username cannot be longer than 20 characters.")
+                }
+
+                // If the username contains special characters, display an error message
+                else if (!/^[a-zA-Z0-9]+$/.test(username)) {
+                    event.preventDefault();
+
+                    // Display an error message
+                    displayErrorMessage("Username can only contain letters and numbers.")
+                }
+
+                // If the username is valid, submit the form
+                else {
+                    return true;
+                }
+            }
+
+            function displayErrorMessage(message) {
+                // Create an error message
+                error = document.createElement("p");
+                error.innerHTML = message;
+                error.style.color = "red";
+
+                // Add the error message to the page
+                errorMsgDiv = document.getElementById("error-message");
+                
+                // Clear the error message div
+                errorMsgDiv.innerHTML = "";
+
+                // Add the error message to the page
+                errorMsgDiv.appendChild(error);
+            }
+        </script>
+    </head>
+
+    <body>
+        <h1 id="chatroom-title">Chatroom</h1>
+
+        <h3 id="username-prompt">
+            Please enter your username to continue.
+        </h3>
+
+        <form action="http://192.168.1.136:5000/chatroom" method="GET">
+            <input id = "username-input" type="text" name="username" placeholder="Username" required>
+            <input type="submit" value="Enter" onclick="validateUsername(event)">
+        </form>
+
+        <div id="error-message"></div>
+    </body>
+
+</html>
+

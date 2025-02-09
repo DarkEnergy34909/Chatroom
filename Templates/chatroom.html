@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Chatroom</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+
+        <script>
+            // Connect to the server using a WebSocket
+            var socket = io.connect("http://" + document.domain + ":" + location.port);
+
+            // When a new message is received, update the messages on the page 
+            socket.on("receive_message", function(data) {
+                updateMessages(data);
+            });
+
+            // Sends the message to the server using WebSocket and updates the messages on the page
+            function sendMessage(event) {
+                // Prevent the form from submitting
+                event.preventDefault();
+
+                // If the username or message is empty, don't send the message
+                let username = document.getElementById("username").value;
+                let message = document.getElementById("message").value;
+                if (username == "" || message == "") {
+                    return;
+                }
+
+                // Send the message to the server
+                sendSocketMessage();
+
+                // Clear the message input 
+                document.getElementById("message").value = "";
+
+                // Don't update the messages on the page here, it will be updated when the server sends the message back
+                //updateMessages();
+
+
+                /*DONT USE FETCH/HTTP REQUESTS, USE SOCKET.IO INSTEAD
+
+                // Create new form data
+                formData = new FormData();
+                formData.append("username", username);
+                formData.append("message", message);
+
+                // Send the message to the server
+                fetch("/chatroom", {
+                    method: "POST",
+                    body: formData
+                });
+                */
+            }
+
+            // Function to update the messages on the page after a new message is received
+            function updateMessages(data) {
+                // Get messages
+                let messages = data.messages;
+
+                // Get the messages div
+                messagesDiv = document.getElementById("messages");
+
+                // Clear the messages div
+                messagesDiv.innerHTML = "";
+
+                // Create a new unordered list
+                ul = document.createElement("ul");
+
+                // Add each message to the unordered list
+                for (let message of messages) {
+                    let li = document.createElement("li");
+
+                    /*let div = document.createElement("div");
+                    div.className = "username-message";
+                    div.innerHTML = "<strong>" + message[2] + ":</strong> " + message[1] + "";
+
+                    let em = document.createElement("em");
+                    em.innerHTML = message[3];
+
+                    li.appendChild(div);
+                    li.appendChild(em);*/
+
+
+                    li.innerHTML = "<div class='username-message'><strong>" + message[2] + ":</strong> " + message[1] + " </div><em>" + message[3] + "</em>";
+                    ul.appendChild(li);
+                }
+
+                // Add the unordered list to the messages div
+                messagesDiv.appendChild(ul);
+
+                /* DONT USE FETCH/HTTP REQUESTS, USE SOCKET.IO INSTEAD
+                fetch("/messages")
+                    .then(response => response.json())
+                    .then(data => {
+                        // Get the messages div
+                        messagesDiv = document.getElementById("messages");
+
+                        ... Code to update the messages on the page ...
+                    });
+                */
+            }
+
+            // Sends a socket message to the server when a new message is posted
+            function sendSocketMessage() {
+
+                // Get username and message
+                let username = document.getElementById("username").value;
+                let message = document.getElementById("message").value;
+
+                // Emit the message to the server
+                socket.emit("send_message", {
+                    'username': username,
+                    'message': message
+                })
+            }
+        </script>
+    </head>
+
+    <body>
+        <h1 id="chatroom-title">Chatroom</h1>
+
+        <h3 id="welcome-message">
+            Welcome to the chatroom, {{ username }}!
+        </h3>
+
+        <div id="messages">
+            <ul>
+                {% for message in messages %}
+                <li>
+                    <div class="username-message">
+                        <strong>{{message[2]}}:</strong>
+                        {{message[1]}}
+                    </div>
+                    <em>{{message[3]}}</em>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <form id="message-form">
+            <input id="username" type="hidden" name="username" value="{{ username }}">
+            <input id="message" type="text" name="message" placeholder="Enter your message" required>
+            <input type="submit" value="Send" onclick="sendMessage(event);">
+        </form> 
+        
+    </body>
+</html>
